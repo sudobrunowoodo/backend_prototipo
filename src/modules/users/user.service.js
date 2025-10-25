@@ -7,12 +7,25 @@ let administrators = require('../../data/administrators');
 let jobs = require('../../data/jobs');
 let users = require('../../data/users');
 
-let allUsers = [...clients, ...users, ...administrators];
+let allUsers = [ ...clients, ...users, ...administrators ];
 
 let lastId = allUsers.length;
 const JWT_KEY = process.env.JWTKEY;
 const JWT_KEY_CLIENT = process.env.JWTKEYCLIENTS;
 const JWT_KEY_ADM = process.env.JWTKEYADM;
+
+const keyToUse = (JWTKEY) => {
+    switch (JWTKEY){
+    case "candidato":
+        return JWT_KEY;
+    case "cliente":
+        return JWT_KEY_CLIENT;
+    case "adm":
+        return JWT_KEY_ADM;
+    default:
+        throw new Error("Este tipo de permissão é inválida");
+    }
+}
 
 if (!JWT_KEY){
     logger.error("Chave JWT não encontrada nas variáveis de ambiente.");
@@ -43,28 +56,16 @@ exports.cadastrarUsuario = async ( nomeUsuario, email, senha, permissao ) => {
             email,
             senha: encryptPassword,
             permissao,
-            vagasId: []
+            candidaturaVagasId: []
         }
 
         allUsers.push(newUser);
 
-        switch (newUser.permissao) {
-            case "candidato":
-                var keyToUse = JWT_KEY;
-                break;
-            case "cliente":
-                var keyToUse = JWT_KEY_CLIENT;
-                break;
-            case "adm":
-                var keyToUse = JWT_KEY_ADM;
-                break;
-            default:
-                throw new Error("Este tipo de permissão é inválida");
-        }
+        const keyJWT = keyToUse(newUser.permissao);
 
         const token = jwt.sign(
             { id: newUser.id, email: newUser.email, senha: newUser.senha, permissao: newUser.permissao },
-            keyToUse,
+            keyJWT,
             { expiresIn: "20min" }
         );
 
@@ -81,7 +82,7 @@ exports.cadastrarUsuario = async ( nomeUsuario, email, senha, permissao ) => {
 
 exports.loginUser = async ( email, senha ) => {
     try {
-        if ( !email, !senha ) {
+        if ( !email || !senha ) {
             throw new Error("Dados de email e senha são obrigatórios.");
         }
 
@@ -94,25 +95,12 @@ exports.loginUser = async ( email, senha ) => {
         if(!senhaValidada) {
             throw new Error("Senha inválida.");
         }
-
         
-        switch (userToLogin.permissao) {
-            case "candidato":
-                var keyToUse = JWT_KEY;
-                break;
-            case "cliente":
-                var keyToUse = JWT_KEY_CLIENT;
-                break;
-            case "adm":
-                var keyToUse = JWT_KEY_ADM;
-                break;
-            default:
-                throw new Error("Este tipo de permissão é inválida");
-        }
+        const keyJWT = keyToUse(userToLogin.permissao);
 
         const token = jwt.sign(
             { id: userToLogin.id, email: userToLogin.email, nome: userToLogin.nome, permissao: userToLogin.permissao},
-            keyToUse,
+            keyJWT,
             { expiresIn: "24h" }
         );
 

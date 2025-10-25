@@ -15,7 +15,7 @@ const autenticarToken = ( req, res, next ) => {
         const token = autHeader && autHeader.split(' ')[1];
 
         if (!token) {
-            logger.warn('Token não fornecido', {
+            logger.warn('Token ausente', {
                 url: req.url,
                 method: req.method,
                 ip: req.ip

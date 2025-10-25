@@ -4,13 +4,13 @@ let jobs = require('../../data/jobs');
 
 exports.getAllJobs = async () => {
     try {
-        const jobData = jobs.map(({usersId, ...jobData}) => jobData);
+        const jobData = jobs.map(({usersId, clientId, ...jobData}) => jobData);
         const jobsWithClient = jobData.map( jobs => {
             const clientMatch = clients.find( clients => clients.id === jobs.clientId );
             if (clientMatch) {
                 return {
                     ...jobs,
-                    clientId: clientMatch.nomeUsuario
+                    empresaOfertando: clientMatch.empresa
                 };
             }
             return jobs;

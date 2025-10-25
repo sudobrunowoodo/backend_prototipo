@@ -31,7 +31,7 @@ exports.cadastrarUsuarioController = async ( req, res ) => {
 exports.loginUserController = async ( req, res ) => {
     try {
         const { email, senha } = req.body;
-        if ( !email, !senha ) {
+        if ( !email || !senha ) {
             return res.status(400).json({
                 error: 'E-mail e senha são campos obrigatórios e devem ser preenchidos.'
             });
